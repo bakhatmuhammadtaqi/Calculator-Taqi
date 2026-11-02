@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ps" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1425">
+<meta name="description" content="Offline Calculator App by Bakhat Muhammad Taqi">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png">
+<title>حساب ماشین – بخت محمد تقي</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden}
+body{background:#0b1425;color:#f8fafc;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 7px env(safe-area-inset-bottom)}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.app{width:100%;max-width:450px;height:100%;max-height:900px;background:#1e293b;border:1px solid #40536b;border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:7px;position:relative;overflow:hidden;box-shadow:0 15px 40px #0008}
+.top{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:6px;flex-shrink:0}
+.title{text-align:center}.title h1{font:700 21px 'Noto Nastaliq Urdu';margin:0}.title h2{font:400 12px 'Noto Nastaliq Urdu';color:#38bdf8;margin:0}
+.icon{width:36px;height:36px;border:0;border-radius:10px;background:#334155;color:white;font-size:19px}
+.contact{text-align:center;font:11px 'Noto Nastaliq Urdu';color:#94a3b8}.contact a{color:#4ade80;text-decoration:none;font:600 12px Cairo;direction:ltr;display:inline-block}
+.toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%;flex-shrink:0;direction:ltr}
+.tool{height:35px;min-width:0;padding:0 2px;border:1px solid #475569;border-radius:9px;background:#334155;color:white;font-size:11px;font-weight:700;white-space:nowrap}
+.tool:active{transform:scale(.95);background:#475569}
+.display{background:#091426;border:1px solid #334155;border-radius:15px;padding:10px 12px;min-height:105px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;user-select:text;-webkit-user-select:text}
+.expression,.result,.preview{direction:ltr;text-align:left;overflow-wrap:anywhere;font-family:Cairo,monospace;font-variant-numeric:tabular-nums}
+.expression{font-size:20px;font-weight:700;color:#38bdf8;min-height:28px}
+.result{font-size:clamp(28px,7vw,36px);font-weight:800;min-height:43px;color:#fff}
+.preview{font-size:22px;font-weight:800;color:#4ade80;min-height:29px}
+.gt{background:#334155;border-radius:11px;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.gt span:first-child{font:700 14px 'Noto Nastaliq Urdu';color:#facc15}
+#gt{color:#4ade80;direction:ltr;font-weight:bold;overflow-wrap:anywhere}
+.keys{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr)) minmax(0,.8fr);gap:8px;direction:rtl}
+.key{min-width:0;min-height:0;border:1px solid #475569;border-radius:12px;background:#334155;color:white;font-size:clamp(19px,5vw,26px);font-weight:bold;box-shadow:0 3px 0 #111d2d;transition:transform .08s,filter .08s}
+.key:active{transform:scale(.93);filter:brightness(1.3)}
+.op{background:#0284c7;border-color:#0ea5e9}.equal{background:#16a34a;border-color:#22c55e}.gtkey{background:#d97706;border-color:#f59e0b}.zero{grid-column:span 1}
+.ac{grid-column:span 1;background:#e11d48;border-color:#fb7185;font-size:20px}
+.history{display:none;position:absolute;inset:7px;background:#101d30;border:1px solid #475569;border-radius:15px;z-index:5;padding:12px;flex-direction:column;min-height:0}
+.history.open{display:flex}
+.hhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.htitle{font:700 16px 'Noto Nastaliq Urdu';color:#38bdf8}
+.hlist{flex:1;overflow-y:auto;min-height:0;direction:ltr}
+.item{padding:8px;border-bottom:1px solid #334155;text-align:left;cursor:pointer}
+.item span,.item strong,.item small{display:block;overflow-wrap:anywhere}
+.item span{color:#94a3b8;font-size:12px}.item strong{color:#4ade80;font-size:16px}.item small{color:#64748b}
+.hactions button{width:100%;height:40px;margin-top:8px;background:#e11d48;border:0;border-radius:9px;color:white;font:14px 'Noto Nastaliq Urdu'}
+.toast{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);background:#334155;border:1px solid #64748b;border-radius:9px;padding:8px 13px;font:12px 'Noto Nastaliq Urdu';white-space:nowrap;opacity:0;pointer-events:none;z-index:10}
+.toast.show{opacity:1}
+@media(max-height:700px){
+.app{padding:6px;gap:4px;border-radius:14px}.title h1{font-size:17px}.title h2{font-size:10px}.icon{height:31px;width:33px}.contact{font-size:9px}.tool{height:29px;font-size:10px}.display{min-height:83px;padding:5px 9px}.expression{font-size:16px;min-height:22px}.result{font-size:25px;min-height:30px}.preview{font-size:18px;min-height:23px}.gt{padding:5px 10px}.keys{gap:5px}.key{font-size:18px;border-radius:9px}
+}
+@media(max-height:570px){
+.app{gap:3px;padding:5px}.display{min-height:68px}.expression{font-size:14px;min-height:18px}.result{font-size:22px;min-height:25px}.preview{font-size:15px;min-height:18px}.tool{height:25px;font-size:9px}.gt{padding:3px 8px}.keys{gap:3px}.key{border-radius:7px;font-size:17px}
+}
+@media(max-width:350px){.tool{font-size:9px}.app{padding:5px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top">
+<button class="icon" id="historyBtn" title="تاریخچه">🕘</button>
+<div class="title"><h1>حساب ماشین</h1><h2>بخت محمد تقي</h2></div>
+<button class="icon" id="undoBtn" title="Undo">↶</button>
+</header>
+<div class="contact">واتس‌اپ: <a href="https://wa.me/93700000128" target="_blank" rel="noopener">+93700000128</a></div>
+<div class="toolbar">
+<button class="tool" id="undoTool">↶ Undo</button><button class="tool" id="redoBtn">↷ Redo</button><button class="tool" id="copyBtn">▣ Copy</button><button class="tool" id="pasteBtn">📋 Paste</button><button class="tool" id="selectBtn">▤ Select</button>
+</div>
+<section class="display"><div class="expression" id="expression">0</div><div class="result" id="result" tabindex="0">0</div><div class="preview" id="preview"></div></section>
+<section class="gt"><span>GT ټولیزه مجموعه</span><span id="gt">0</span></section>
+<section class="keys" id="keys">
+<button class="key op" data-op="/">÷</button><button class="key op" data-action="backspace">⌫</button><button class="key op" data-op="%">%</button><button class="key ac" data-action="clear">C</button>
+<button class="key op" data-op="*">×</button><button class="key" data-num="9">9</button><button class="key" data-num="8">8</button><button class="key" data-num="7">7</button>
+<button class="key op" data-op="-">−</button><button class="key" data-num="6">6</button><button class="key" data-num="5">5</button><button class="key" data-num="4">4</button>
+<button class="key op" data-op="+">+</button><button class="key" data-num="3">3</button><button class="key" data-num="2">2</button><button class="key" data-num="1">1</button>
+<!-- په ښودل شوي ترتیب کې له ښي لوري: =، .، 0، GT -->
+<button class="key equal" data-action="equal">=</button><button class="key" data-num=".">.</button><button class="key zero" data-num="0">0</button><button class="key gtkey" data-action="gt">GT</button>
+</section>
+<section class="history" id="history">
+<div class="hhead"><span class="htitle">د حسابونو تاریخچه</span><button class="icon" id="closeHistory">✕</button></div>
+<div class="hlist" id="historyList"></div><div class="hactions"><button id="clearHistory">تاریخچه پاکول</button></div>
+</section>
+<div class="toast" id="toast"></div>
+</main>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const KEY="taqiCalculatorHistory",STATEKEY="taqiCalculatorState",MAX=200;
+let input="0",first=null,firstText=null,operator=null,reset=false,second=false,expression="";
+let records=[],undoStack=[],redoStack=[],timer=null;
+function fmt(value){let s=String(value??"0").replace(/,/g,"");if(!s)return "0";let sign="";if(s.startsWith("-")){sign="-";s=s.slice(1)}let p=s.split(".");p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,",");return sign+p[0]+(p.length>1?"."+p[1]:"")}
+function num(n){if(!Number.isFinite(n))return "خطا";if(Object.is(n,-0))n=0;return Number(n.toPrecision(12)).toString()}
+function sym(o){return ({"+":"+","-":"−","*":"×","/":"÷","%":"%"})[o]||o}
+function notify(message){$("toast").textContent=message;$("toast").classList.add("show");clearTimeout(timer);timer=setTimeout(()=>$("toast").classList.remove("show"),1800)}
+function snapshot(){return {input,first,firstText,operator,reset,second,expression,records:JSON.parse(JSON.stringify(records))}}
+function saveUndo(){undoStack.push(snapshot());if(undoStack.length>100)undoStack.shift();redoStack=[]}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(records));localStorage.setItem(STATEKEY,JSON.stringify(snapshot()))}catch(e){console.error(e)}}
+function restore(s){input=s.input;first=s.first;firstText=s.firstText;operator=s.operator;reset=s.reset;second=s.second;expression=s.expression;records=JSON.parse(JSON.stringify(s.records||[]));render();renderHistory();persist()}
+function gtValue(){return records.reduce((sum,r)=>{const n=Number(r.raw);return sum+(Number.isFinite(n)?n:0)},0)}
+function calc(a,b,o){if(!Number.isFinite(a)||!Number.isFinite(b))return null;let r;switch(o){case "+":r=a+b;break;case "-":r=a-b;break;case "*":r=a*b;break;case "/":if(b===0)return null;r=a/b;break;case "%":if(b===0)return null;r=a%b;break;default:return null}return Number.isFinite(r)?r:null}
+function updatePreview(){if(operator===null||!second||input==="خطا"){$("preview").textContent="";return}const answer=calc(first,Number(input),operator);$("preview").textContent=answer===null?"د صفر پر وېش ممکن نه دی":"= "+fmt(num(answer))}
+function render(){$("result").textContent=fmt(input);$("expression").textContent=expression||fmt(input);$("gt").textContent=fmt(num(gtValue()));updatePreview()}
+function numberPress(n){if(input==="خطا"){saveUndo();input="0";first=null;firstText=null;operator=null;reset=false;second=false;expression=""}else saveUndo();if(reset){input="0";reset=false;if(operator!==null)second=true}if(n==="."){if(input.includes("."))return;input+="."}else{if(input==="0")input=n;else if(input==="-0")input="-"+n;else{if(input.replace(/[-.]/g,"").length>=15){notify("د عددونو حد ته ورسېدئ");return}input+=n}}expression=operator!==null?fmt(firstText)+" "+sym(operator)+" "+fmt(input):fmt(input);render();persist()}
+function operatorPress(o){if(input==="خطا")return;saveUndo();if(operator!==null&&second){if(!perform(false))return}if(operator!==null&&!second)operator=o;else{first=Number(input);firstText=input;operator=o}reset=true;second=false;expression=fmt(firstText)+" "+sym(operator);render();persist()}
+function perform(saveRecord){if(operator===null||first===null)return false;const b=Number(input),answer=calc(first,b,operator);if(answer===null){input="خطا";expression="د صفر پر وېش ممکن نه دی";first=null;firstText=null;operator=null;reset=true;second=false;render();persist();notify("محاسبه ممکنه نه ده");return false}const exp=fmt(firstText)+" "+sym(operator)+" "+fmt(input),raw=num(answer);if(saveRecord){records.unshift({expression:exp,result:fmt(raw),raw:raw,date:new Date().toLocaleString()});records=records.slice(0,MAX)}input=raw;expression=exp+" =";first=null;firstText=null;operator=null;reset=true;second=false;render();persist();if(saveRecord)renderHistory();return true}
+function equal(){if(operator===null||first===null||!second)return;saveUndo();perform(true)}
+function backspace(){saveUndo();if(input==="خطا"){input="0";first=null;firstText=null;operator=null;reset=false;second=false;expression=""}else if(operator!==null&&second){input=input.length>1?input.slice(0,-1):"0";if(input==="-")input="0";if(input==="0")second=false;expression=fmt(firstText)+" "+sym(operator)+" "+(second?fmt(input):"")}else if(operator!==null&&!second){firstText=firstText.length>1?firstText.slice(0,-1):"0";if(firstText==="-")firstText="0";first=Number(firstText);input=firstText;expression=fmt(firstText)+" "+sym(operator)}else{input=input.length>1?input.slice(0,-1):"0";if(input==="-")input="0";expression=fmt(input)}reset=false;render();persist()}
+function clearAll(){saveUndo();input="0";first=null;firstText=null;operator=null;reset=false;second=false;expression="";records=[];render();renderHistory();persist();notify("ټول حسابونه صفر شول")}
+function showGT(){saveUndo();input=num(gtValue());first=null;firstText=null;operator=null;second=false;reset=true;expression="GT - د ټولو حسابونو مجموعه";render();persist()}
+function undo(){if(!undoStack.length){notify("Undo نشته");return}redoStack.push(snapshot());restore(undoStack.pop())}
+function redo(){if(!redoStack.length){notify("Redo نشته");return}undoStack.push(snapshot());restore(redoStack.pop())}
+function renderHistory(){const list=$("historyList");list.replaceChildren();if(!records.length){const empty=document.createElement("p");empty.textContent="تر اوسه حساب نشته";empty.style.textAlign="center";list.appendChild(empty);return}records.forEach((r,i)=>{const item=document.createElement("div");item.className="item";const exp=document.createElement("span");exp.textContent=(i+1)+". "+r.expression+" =";const result=document.createElement("strong");result.textContent=fmt(r.raw);const date=document.createElement("small");date.textContent=r.date||"";item.append(exp,result,date);item.addEventListener("click",()=>{saveUndo();input=r.raw;first=null;firstText=null;operator=null;second=false;reset=true;expression=r.expression+" =";render();persist();$("history").classList.remove("open")});list.appendChild(item)})}
+function clearHistory(){if(!confirm("یوازې تاریخچه او GT پاکول غواړئ؟"))return;saveUndo();records=[];render();renderHistory();persist();notify("تاریخچه پاکه شوه")}
+async function copy(){const text=$("result").textContent;try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(text);else fallbackCopy(text);notify("نتیجه Copy شوه")}catch(e){try{fallbackCopy(text);notify("نتیجه Copy شوه")}catch(err){notify("Copy ممکن نه شو")}}}
+function fallbackCopy(text){const t=document.createElement("textarea");t.value=text;t.style.position="fixed";t.style.left="-9999px";document.body.appendChild(t);t.select();const ok=document.execCommand("copy");t.remove();if(!ok)throw Error("Copy failed")}
+async function paste(){try{if(!navigator.clipboard||!navigator.clipboard.readText){notify("Clipboard اجازه نشته");return}let text=(await navigator.clipboard.readText()).trim().replace(/,/g,"").replace(/[−–]/g,"-");if(!/^-?(?:\d+\.?\d*|\.\d+)$/.test(text)){notify("معتبر عدد نه دی");return}const value=Number(text);if(!Number.isFinite(value)){notify("عدد ناسم دی");return}saveUndo();input=num(value);reset=false;if(operator!==null){second=true;expression=fmt(firstText)+" "+sym(operator)+" "+fmt(input)}else expression=fmt(input);render();persist();notify("عدد داخل شو")}catch(e){notify("Clipboard اجازه ورکړئ")}}
+function selectResult(){const range=document.createRange();range.selectNodeContents($("result"));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range)}
+$("keys").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.num!==undefined){numberPress(b.dataset.num);return}if(b.dataset.op!==undefined){operatorPress(b.dataset.op);return}switch(b.dataset.action){case "backspace":backspace();break;case "equal":equal();break;case "clear":clearAll();break;case "gt":showGT();break}});
+$("historyBtn").addEventListener("click",()=>{$("history").classList.toggle("open");renderHistory()});
+$("closeHistory").addEventListener("click",()=>{$("history").classList.remove("open")});
+$("undoBtn").addEventListener("click",undo);$("undoTool").addEventListener("click",undo);$("redoBtn").addEventListener("click",redo);$("copyBtn").addEventListener("click",copy);$("pasteBtn").addEventListener("click",paste);$("selectBtn").addEventListener("click",selectResult);$("clearHistory").addEventListener("click",clearHistory);$("result").addEventListener("click",copy);
+document.addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey){if(e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo()}else if(e.key.toLowerCase()==="y"){e.preventDefault();redo()}return}if($("history").classList.contains("open")){if(e.key==="Escape")$("history").classList.remove("open");return}if(/^[0-9]$/.test(e.key)){e.preventDefault();numberPress(e.key)}else if(e.key==="."){e.preventDefault();numberPress(".")}else if(["+","-","*","/","%"].includes(e.key)){e.preventDefault();operatorPress(e.key)}else if(e.key==="Enter"||e.key==="="){e.preventDefault();equal()}else if(e.key==="Backspace"){e.preventDefault();backspace()}else if(e.key==="Escape"){e.preventDefault();clearAll()}});
+function load(){try{const h=localStorage.getItem(KEY);if(h){const data=JSON.parse(h);if(Array.isArray(data))records=data.filter(r=>r&&typeof r.expression==="string"&&r.raw!==undefined&&Number.isFinite(Number(r.raw))).slice(0,MAX)}}catch(e){console.error(e)}try{const s=JSON.parse(localStorage.getItem(STATEKEY)||"null");if(s&&typeof s.input==="string"&&(s.operator===null||["+","-","*","/","%"].includes(s.operator))){input=s.input;first=Number.isFinite(s.first)?s.first:null;firstText=typeof s.firstText==="string"?s.firstText:null;operator=s.operator;reset=!!s.reset;second=!!s.second;expression=typeof s.expression==="string"?s.expression:""}}catch(e){console.error(e)}render();renderHistory()}
+load();
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));}</script>
+</body>
+</html>
